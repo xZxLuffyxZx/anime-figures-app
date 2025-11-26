@@ -1,0 +1,255 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+
+export default function EditFigurePage() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params.id;                    
+  const [form, setForm] = useState(null);
+  const [message, setMessage] = useState("");
+
+  const pageStyle = {
+    minHeight: "100vh",
+    background: "linear-gradient(to bottom, #ffeaf4, #ffd6e8)",
+    padding: "40px",
+    fontFamily: "Arial, system-ui, sans-serif",
+    color: "#4a3b47",
+  };
+
+  const inputStyle = {
+    padding: "10px",
+    borderRadius: "10px",
+    border: "1px solid #ffb3d9",
+    color: "#4a3b47",
+    backgroundColor: "white",
+    fontSize: "0.95rem",
+  };
+
+  const labelStyle = {
+    fontSize: "0.9rem",
+    fontWeight: "bold",
+    color: "#7b3b63",
+  };
+
+  useEffect(() => {
+    if (!id) return;                       
+
+    async function load() {
+      const res = await fetch(`/api/figures/${id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setForm({
+          name: data.name || "",
+          anime_title: data.anime_title || "",
+          brand: data.brand || "",
+          price: data.price || "",
+          stock: data.stock?.toString() || "",
+          scale: data.scale || "",
+          release_date: data.release_date
+            ? data.release_date.substring(0, 10)
+            : "",
+          image_url: data.image_url || "",
+        });
+      } else {
+        setMessage(data.message || "Error loading figure");
+      }
+    }
+
+    load();
+  }, [id]);
+
+  if (!form) {
+    return (
+      <div style={pageStyle}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setMessage("");
+
+    const res = await fetch(`/api/figures/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.message || "Error updating figure");
+      return;
+    }
+
+    router.push("/dashboard/figures");
+  }
+
+  async function handleDelete() {
+    const res = await fetch(`/api/figures/${id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setMessage(data.message || "Error deleting figure");
+      return;
+    }
+    router.push("/dashboard/figures");
+  }
+
+  return (
+    <div style={pageStyle}>
+      <h1 style={{ color: "#c91873", fontSize: "2rem", marginBottom: "20px" }}>
+        🌸 Edit Anime Figure
+      </h1>
+
+      <a
+        href="/dashboard/figures"
+        style={{
+          padding: "8px 14px",
+          background: "#f8bbd0",
+          borderRadius: "8px",
+          textDecoration: "none",
+          color: "#581845",
+          fontWeight: "bold",
+        }}
+      >
+        ← Back
+      </a>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          marginTop: "20px",
+          background: "white",
+          padding: "20px",
+          borderRadius: "16px",
+          maxWidth: "520px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
+        <div>
+          <div style={labelStyle}>Figure Name</div>
+          <input
+            style={inputStyle}
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <div style={labelStyle}>Anime Title</div>
+          <input
+            style={inputStyle}
+            value={form.anime_title}
+            onChange={(e) =>
+              setForm({ ...form, anime_title: e.target.value })
+            }
+          />
+        </div>
+
+        <div>
+          <div style={labelStyle}>Brand</div>
+          <input
+            style={inputStyle}
+            value={form.brand}
+            onChange={(e) => setForm({ ...form, brand: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <div style={labelStyle}>Price (THB)</div>
+          <input
+            style={inputStyle}
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <div style={labelStyle}>Stock</div>
+          <input
+            style={inputStyle}
+            value={form.stock}
+            onChange={(e) => setForm({ ...form, stock: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <div style={labelStyle}>Scale</div>
+          <input
+            style={inputStyle}
+            value={form.scale}
+            onChange={(e) => setForm({ ...form, scale: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <div style={labelStyle}>Release Date</div>
+          <input
+            type="date"
+            style={inputStyle}
+            value={form.release_date}
+            onChange={(e) =>
+              setForm({ ...form, release_date: e.target.value })
+            }
+          />
+        </div>
+
+        <div>
+          <div style={labelStyle}>Image URL</div>
+          <input
+            style={inputStyle}
+            value={form.image_url}
+            onChange={(e) =>
+              setForm({ ...form, image_url: e.target.value })
+            }
+          />
+        </div>
+
+        <button
+          type="submit"
+          style={{
+            marginTop: "10px",
+            padding: "10px 16px",
+            background: "#ff79c6",
+            border: "none",
+            color: "white",
+            borderRadius: "10px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            fontSize: "1rem",
+          }}
+        >
+          Save Changes
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDelete}
+          style={{
+            marginTop: "10px",
+            padding: "10px 16px",
+            background: "#f03e3e",
+            border: "none",
+            color: "white",
+            borderRadius: "10px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            fontSize: "1rem",
+          }}
+        >
+          Delete Figure
+        </button>
+
+        {message && <p style={{ color: "red" }}>{message}</p>}
+      </form>
+    </div>
+  );
+}
