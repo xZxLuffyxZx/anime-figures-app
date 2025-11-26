@@ -89,16 +89,23 @@ export default function EditFigurePage() {
   }
 
   async function handleDelete() {
-    const res = await fetch(`/api/figures/${id}`, {
-      method: "DELETE",
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setMessage(data.message || "Error deleting figure");
-      return;
-    }
-    router.push("/dashboard/figures");
+  const yes = confirm("Are you sure you want to delete this figure?");
+  if (!yes) return;
+
+  const res = await fetch(`/api/figures/${id}`, {
+    method: "DELETE",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    setMessage(data.message || "Error deleting figure");
+    return;
   }
+
+  router.push("/dashboard/figures");
+}
+
 
   return (
     <div style={pageStyle}>
