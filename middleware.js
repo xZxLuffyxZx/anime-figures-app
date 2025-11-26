@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-const PUBLIC_PATHS = ["/login", "/register", "/", "/figures-test"];
+const PUBLIC_PATHS = ["/login", "/register", "/", "/figures-test", "/no-access"];
 
 export async function middleware(req) {
   const { pathname } = req.nextUrl;
@@ -14,7 +14,7 @@ export async function middleware(req) {
 
   if (!token) {
     const url = req.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/no-access";  
     return NextResponse.redirect(url);
   }
 
@@ -24,7 +24,7 @@ export async function middleware(req) {
   } catch (err) {
     console.error("Invalid token:", err);
     const url = req.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/no-access";   
     return NextResponse.redirect(url);
   }
 }
